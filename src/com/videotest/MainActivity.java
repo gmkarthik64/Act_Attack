@@ -3,9 +3,22 @@ package com.videotest;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -13,7 +26,9 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,16 +36,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.AsyncTask;
 
 public class MainActivity extends Activity {
 
 	// Setup a result flag for your video capture
-	public final static String EXTRA_MESSAGE = "MESSAGE";
 	int ACTION_TAKE_VIDEO = 100;
 	String upLoadServerUri = null;
 	String fPath = null;
 	int serverResponseCode = 0;
+	File loc_file = null;
+	public final static String EXTRA_VIDEO = "video";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +100,18 @@ public class MainActivity extends Activity {
 		// Launch an intent to capture video from MediaStore
 		Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 		startActivityForResult(takeVideoIntent, ACTION_TAKE_VIDEO);
+	}
+
+	public void receiveMessage(View view) {
+		Receiver runner = new Receiver();
+		runner.execute("0629140028.mp4");
+		try{
+		runner.get(100,TimeUnit.SECONDS);
+		}
+		catch(Exception e){}
+		Intent intent = new Intent(this, PlayVidActivity.class);
+		intent.putExtra(EXTRA_VIDEO,loc_file.getPath());
+		startActivity(intent);
 	}
 
 	// Obtain the file path to the video in onActivityResult
@@ -215,9 +242,91 @@ public class MainActivity extends Activity {
 					Log.e("Upload file to server Exception",
 							"Exception : " + e.getMessage(), e);
 				}
+				sourceFile.delete();
 				return "" + serverResponseCode;
 
 			} // End else block
+		}
+	}
+
+	private class Receiver extends AsyncTask<String, String, String> {
+		int totalSize = 0;
+		int downloadedSize = 0;
+
+		@Override
+		protected String doInBackground(String... params) {
+			String fName = params[0];
+			try {
+				HttpClient client = new DefaultHttpClient();
+				HttpPost post = new HttpPost(
+						"http://agit.cloudapp.net/~karthik/PrepFile.php");
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
+						2);
+				nameValuePairs.add(new BasicNameValuePair("vid_id", fName));
+				nameValuePairs.add(new BasicNameValuePair("del", "false"));
+				post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+				client.execute(post);
+			} catch (Exception e) {
+			}
+			try {
+				URL url = new URL("http://agit.cloudapp.net/~karthik/dloads/"
+						+ fName);
+				HttpURLConnection urlConnection = (HttpURLConnection) url
+						.openConnection();
+
+				urlConnection.setRequestMethod("GET");
+				urlConnection.setDoOutput(true);
+
+				// connect
+				urlConnection.connect();
+
+				// set the path where we want to save the file
+				File SDCardRoot = new File(
+						Environment
+								.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
+						"VideoTest");
+				// create a new file, to save the downloaded file
+				SDCardRoot.mkdirs();
+				loc_file = new File(SDCardRoot, fName);
+
+				FileOutputStream fileOutput = new FileOutputStream(loc_file);
+
+				// Stream used for reading the data from the internet
+				InputStream inputStream = urlConnection.getInputStream();
+
+				// this is the total size of the file which we are downloading
+				totalSize = urlConnection.getContentLength();
+
+				// create a buffer...
+				byte[] buffer = new byte[1024];
+				int bufferLength = 0;
+
+				while ((bufferLength = inputStream.read(buffer)) > 0) {
+					fileOutput.write(buffer, 0, bufferLength);
+					downloadedSize += bufferLength;
+				}
+				// close the output stream when complete //
+				fileOutput.close();
+
+			} catch (final MalformedURLException e) {
+				e.printStackTrace();
+			} catch (final IOException e) {
+				e.printStackTrace();
+			} catch (final Exception e) {
+			}
+			try {
+				HttpClient client = new DefaultHttpClient();
+				HttpPost post = new HttpPost(
+						"http://agit.cloudapp.net/~karthik/PrepFile.php");
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
+						2);
+				nameValuePairs.add(new BasicNameValuePair("vid_id", fName));
+				nameValuePairs.add(new BasicNameValuePair("del", "true"));
+				post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+				client.execute(post);
+			} catch (Exception e) {
+			}
+			return "";
 		}
 	}
 }
