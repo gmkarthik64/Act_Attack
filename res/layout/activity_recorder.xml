@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   android:orientation="vertical"
+   android:layout_width="fill_parent"
+   android:layout_height="fill_parent"
+   >
+
+<TextView
+    android:id="@+id/word"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:hint="Your word is: YOUR_WORD" 
+    android:textSize="24sp"/>
+
+<SurfaceView
+android:id="@+id/videoview"
+android:layout_width="320dp"
+android:layout_height="240dp"
+android:layout_gravity="center_horizontal"/>
+<Button
+android:id="@+id/mybutton"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:layout_gravity="center_horizontal"
+android:text="REC"
+android:textSize="12sp"/>
+</LinearLayout>

@@ -31,6 +31,16 @@
         <activity
             android:name="com.videotest.PlayVidActivity"
             android:label="@string/title_activity_play_vid"
+            android:screenOrientation="portrait"
+            android:parentActivityName="com.videotest.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.videotest.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.videotest.RecorderActivity"
+            android:label="@string/title_activity_recorder"
+            android:screenOrientation="portrait"
             android:parentActivityName="com.videotest.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

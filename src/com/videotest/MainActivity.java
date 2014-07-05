@@ -98,19 +98,19 @@ public class MainActivity extends Activity {
 	public void sendMessage(View view) {
 
 		// Launch an intent to capture video from MediaStore
-		Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-		startActivityForResult(takeVideoIntent, ACTION_TAKE_VIDEO);
+		Intent takeVideoIntent = new Intent(this, RecorderActivity.class);
+		startActivityForResult(takeVideoIntent,1);
 	}
 
 	public void receiveMessage(View view) {
 		Receiver runner = new Receiver();
-		runner.execute("0629140028.mp4");
-		try{
-		runner.get(100,TimeUnit.SECONDS);
+		runner.execute("myvid.mp4");
+		try {
+			runner.get(100, TimeUnit.SECONDS);
+		} catch (Exception e) {
 		}
-		catch(Exception e){}
 		Intent intent = new Intent(this, PlayVidActivity.class);
-		intent.putExtra(EXTRA_VIDEO,loc_file.getPath());
+		intent.putExtra(EXTRA_VIDEO, loc_file.getPath());
 		startActivity(intent);
 	}
 
@@ -118,15 +118,10 @@ public class MainActivity extends Activity {
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
 		if (resultCode == RESULT_OK) {
-
-			if (requestCode == ACTION_TAKE_VIDEO) {
-
-				Uri videoUri = data.getData();
-				fPath = getRealPathFromURI(videoUri);
-				Log.d("LOGCAT", "Video path is: " + fPath);
-				AsyncTaskRunner runner = new AsyncTaskRunner();
-				runner.execute(fPath);
-			}
+			fPath = data.getStringExtra("result");
+			Log.d("LOGCAT", "Video path is: " + fPath);
+			AsyncTaskRunner runner = new AsyncTaskRunner();
+			runner.execute(fPath);
 		}
 	}
 

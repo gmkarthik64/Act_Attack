@@ -1,11 +1,9 @@
 package com.videotest;
 
-import java.io.File;
 
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,7 +33,6 @@ public class PlayVidActivity extends Activity {
 		Log.d("LOGCAT",path);
 		myVideoView = (VideoView)findViewById(R.id.myvidview1);
 	    myVideoView.setVideoPath(path);
-	    myVideoView.setMediaController(new MediaController(this));
 	    myVideoView.requestFocus();
 	    myVideoView.start();
 	}
